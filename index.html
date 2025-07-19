@@ -1,113 +1,203 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFT  - Công cụ tính điểm</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Công cụ tính điểm TFT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    h2 { color: #d62828; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #eee; }
-    input[type="number"], input[type="text"] { width: 80px; padding: 5px; }
-    .group-title { background: #003049; color: white; padding: 10px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
-    .group-title span { font-weight: bold; }
-    button { padding: 10px 20px; margin: 10px 5px 0 0; cursor: pointer; background-color: #1982c4; color: white; border: none; }
-    .results { margin-top: 20px; background: #edf2f4; padding: 10px; }
-    .top1 { background-color: #ffd700 !important; }
-    .top2 { background-color: #c0c0c0 !important; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('https://images.contentstack.io/v3/assets/blt731acb42bb3d1659/blta6eb14239bc2db84/651e0f70e45ff6105eb6c77c/TFT_Homepage_Background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      padding: 30px;
+      color: #fff;
+    }
+    h2 {
+      text-align: center;
+      font-size: 42px;
+      color: #ffd700;
+      text-shadow: 2px 2px 4px #000;
+      margin-bottom: 40px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      color: #000;
+    }
+    th, td {
+      border: 1px solid #bbb;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #34495e;
+      color: #fff;
+    }
+    input[type="number"], input[type="text"] {
+      width: 90%;
+      padding: 6px;
+      text-align: center;
+    }
+    .group-title {
+      background: #16a085;
+      color: white;
+      padding: 12px;
+      margin-top: 40px;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+      align-items: center;
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    button {
+      background-color: #e67e22;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    button:hover {
+      background-color: #d35400;
+      transform: scale(1.05);
+    }
+    select, input[type="text"], input[type="number"] {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .history-section {
+      margin-top: 50px;
+      background: rgba(0,0,0,0.75);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .history-section h3 {
+      font-size: 20px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    .history-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .history-section li button {
+      background-color: #2980b9;
+      margin: 5px 0;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .top1 { background-color: gold !important; }
+    .top2 { background-color: silver !important; }
     .top3 { background-color: #cd7f32 !important; }
+    .score-total {
+      background-color: #ecf0f1;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h2>Công cụ tính điểm TFT SEA - Vòng loại Việt Nam</h2>
-
-  <label for="pointConfig">Tùy chỉnh điểm theo hạng (cách nhau bởi dấu phẩy, ví dụ: 10,9,8,7,6,5,4,3):</label>
-  <input type="text" id="pointConfig" value="8,7,6,5,4,3,2,1" style="width:300px" onchange="saveSettings()">
-  <br><br>
-
-  <label for="playersPerGroup">Số người mỗi bảng:</label>
-  <input type="number" id="playersPerGroup" value="8" min="2" max="16" onchange="saveSettings()">
-
-  <label for="roundCount">Số vòng đấu:</label>
-  <input type="number" id="roundCount" value="3" min="1" max="10" onchange="saveSettings()">
-
-  <br><br>
-  <input type="file" id="fileInput" accept=".txt,.xlsx" />
-  <button onclick="loadNames()">Nhập tên từ file</button>
-  <button onclick="addGroup()">+ Thêm bảng đấu</button>
-  <button onclick="exportToExcel()">Xuất kết quả toàn bộ</button>
-
+  <h2>Công cụ tính điểm TFT</h2>
+  <div class="controls">
+    <label>Điểm theo hạng (tách dấu phẩy): <input type="text" id="pointConfig" value="10,9,8,7,6,5,4,3,2,1" onchange="saveSettings()"></label>
+    <label>Số người mỗi bảng: <input type="number" id="playersPerGroup" value="8" min="2" max="16" onchange="saveSettings()"></label>
+    <label>Số vòng đấu: <input type="number" id="roundCount" value="4" min="1" max="10" onchange="saveSettings()"></label>
+    <button onclick="addGroup()">+ Thêm bảng đấu</button>
+    <button onclick="exportToExcel()">📤 Xuất Excel</button>
+    <button onclick="clearAll()">🗑 Xoá tất cả</button>
+  </div>
   <div id="app"></div>
-
+  <div class="history-section">
+    <h3>Lịch sử bảng đấu</h3>
+    <ul id="historyList"></ul>
+  </div>
   <script>
-    let rankPoints = [0, 8, 7, 6, 5, 4, 3, 2, 1];
-    let totalGroups = 0;
-    const allTables = [];
+    function addGroup() {
+      const app = document.getElementById('app');
+      const groupId = Date.now();
+      const players = parseInt(document.getElementById('playersPerGroup').value);
+      const rounds = parseInt(document.getElementById('roundCount').value);
+
+      const group = document.createElement('div');
+      group.className = 'group';
+
+      let table = `<div class="group-title">Bảng ${document.querySelectorAll('.group').length + 1} <button onclick="this.closest('.group').remove()">Xoá bảng</button></div>`;
+      table += `<table><thead><tr><th>Tên</th>`;
+      for (let i = 1; i <= rounds; i++) table += `<th>V${i}</th>`;
+      table += `<th>Tổng</th></tr></thead><tbody>`;
+      for (let i = 0; i < players; i++) {
+        table += `<tr><td><input type='text'></td>`;
+        for (let j = 0; j < rounds; j++) {
+          table += `<td><input type='number' min='1' max='${players}' oninput='updateScores(this)'></td>`;
+        }
+        table += `<td class='score-total'>0</td></tr>`;
+      }
+      table += `</tbody></table>`;
+      group.innerHTML = table;
+      app.appendChild(group);
+    }
+
+    function updateScores(input) {
+      const row = input.closest('tr');
+      const inputs = row.querySelectorAll("input[type='number']");
+      const points = document.getElementById("pointConfig").value.split(',').map(n => parseInt(n));
+      let total = 0;
+      inputs.forEach(i => {
+        const pos = parseInt(i.value);
+        if (!isNaN(pos) && pos >= 1 && pos <= points.length) {
+          total += points[pos - 1];
+        }
+      });
+      row.querySelector('.score-total').innerText = total;
+    }
+
+    function exportToExcel() {
+      const tables = document.querySelectorAll("table");
+      let wb = XLSX.utils.book_new();
+      tables.forEach((table, idx) => {
+        const ws = XLSX.utils.table_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws, `Bảng ${idx + 1}`);
+      });
+      XLSX.writeFile(wb, 'bang_diem_TFT.xlsx');
+    }
+
+    function clearAll() {
+      if (confirm("Bạn có chắc muốn xoá tất cả dữ liệu?")) {
+        document.getElementById('app').innerHTML = '';
+        document.getElementById('historyList').innerHTML = '';
+        localStorage.clear();
+      }
+    }
 
     function saveSettings() {
-      const pointConfig = document.getElementById("pointConfig").value;
-      const playersPerGroup = document.getElementById("playersPerGroup").value;
-      const roundCount = document.getElementById("roundCount").value;
-      localStorage.setItem("pointConfig", pointConfig);
-      localStorage.setItem("playersPerGroup", playersPerGroup);
-      localStorage.setItem("roundCount", roundCount);
-
-      const groupData = [];
-      document.querySelectorAll("[data-group]").forEach(container => {
-        const table = container.querySelector("table");
-        const groupRows = table.querySelectorAll("tr");
-        const data = [];
-        groupRows.forEach((row, index) => {
-          if (index === 0) return;
-          const inputs = row.querySelectorAll("input");
-          const rowData = Array.from(inputs).map(input => input.value);
-          data.push(rowData);
-        });
-        groupData.push(data);
-      });
-      localStorage.setItem("savedGroups", JSON.stringify(groupData));
+      localStorage.setItem("tft_pointConfig", document.getElementById("pointConfig").value);
+      localStorage.setItem("tft_playersPerGroup", document.getElementById("playersPerGroup").value);
+      localStorage.setItem("tft_roundCount", document.getElementById("roundCount").value);
     }
 
     function loadSettings() {
-      if (localStorage.getItem("pointConfig")) {
-        document.getElementById("pointConfig").value = localStorage.getItem("pointConfig");
-      }
-      if (localStorage.getItem("playersPerGroup")) {
-        document.getElementById("playersPerGroup").value = localStorage.getItem("playersPerGroup");
-      }
-      if (localStorage.getItem("roundCount")) {
-        document.getElementById("roundCount").value = localStorage.getItem("roundCount");
-      }
-      if (localStorage.getItem("savedGroups")) {
-        const groupData = JSON.parse(localStorage.getItem("savedGroups"));
-        renderGroupsFromSavedData(groupData);
-      } else {
-        addGroup();
-      }
+      if (localStorage.getItem("tft_pointConfig")) document.getElementById("pointConfig").value = localStorage.getItem("tft_pointConfig");
+      if (localStorage.getItem("tft_playersPerGroup")) document.getElementById("playersPerGroup").value = localStorage.getItem("tft_playersPerGroup");
+      if (localStorage.getItem("tft_roundCount")) document.getElementById("roundCount").value = localStorage.getItem("tft_roundCount");
     }
-
-    function renderGroupsFromSavedData(groups) {
-      document.getElementById("app").innerHTML = "";
-      allTables.length = 0;
-      totalGroups = 0;
-      groups.forEach((groupRows, index) => {
-        totalGroups++;
-        createGroupTable(totalGroups, groupRows.map(row => row[0]));
-        const table = allTables[allTables.length - 1];
-        const trs = table.querySelectorAll("tr");
-        groupRows.forEach((rowData, i) => {
-          const inputs = trs[i + 1].querySelectorAll("input");
-          rowData.forEach((val, j) => {
-            inputs[j].value = val;
-          });
-        });
-      });
-    }
-
-    // (Giữ nguyên các hàm còn lại như addGroup, createGroupTable, calculateGroupPoints, removeGroup, exportToExcel...)
 
     window.onload = loadSettings;
   </script>
